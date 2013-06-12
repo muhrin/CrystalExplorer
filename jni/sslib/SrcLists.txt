@@ -1,0 +1,171 @@
+## analysis
+
+set(sslib_Source_Files__analysis
+  src/analysis/Histogram.cpp
+  src/analysis/SpaceGroup.cpp
+  src/analysis/VoronoiMap.cpp
+)
+source_group("Source Files\\analysis" FILES ${sslib_Source_Files__analysis})
+
+## build_cell
+
+set(sslib_Source_Files__build_cell
+  src/build_cell/AtomExtruder.cpp
+  src/build_cell/AtomsDescription.cpp
+  src/build_cell/AtomsGenerator.cpp
+  src/build_cell/BuildAtomInfo.cpp
+  src/build_cell/GenBox.cpp
+  src/build_cell/GenSphere.cpp
+# src/build_cell/PointGroups.cpp
+  src/build_cell/RandomUnitCellGenerator.cpp
+  src/build_cell/Sphere.cpp
+  src/build_cell/StructureBuild.cpp
+  src/build_cell/StructureBuilder.cpp
+  src/build_cell/SymmetryFunctions.cpp
+  src/build_cell/SymmetryGroup.cpp
+  src/build_cell/SymmetryGroupBuilder.cpp
+)
+source_group("Source Files\\build_cell" FILES ${sslib_Source_Files__build_cell})
+
+## common
+
+set(sslib_Source_Files__common
+  src/common/Atom.cpp
+  src/common/AtomGroup.cpp
+  src/common/AtomSpeciesDatabase.cpp
+  src/common/AtomSpeciesInfo.cpp
+  src/common/Constants.cpp
+  src/common/DistanceCalculator.cpp
+  src/common/DistanceCalculatorDelegator.cpp
+  src/common/OrthoCellDistanceCalculator.cpp
+  src/common/ReferenceDistanceCalculator.cpp
+  src/common/Structure.cpp
+  src/common/StructureProperties.cpp
+  src/common/UnitCell.cpp
+  src/common/UniversalCrystalDistanceCalculator.cpp
+)
+source_group("Source Files\\common" FILES ${sslib_Source_Files__common})
+
+## common/event
+
+set(sslib_Source_Files__common__event
+)
+source_group("Source Files\\common\\event" FILES ${sslib_Source_Files__common__event})
+
+
+## factory
+
+set(sslib_Source_Files__factory
+  src/factory/GenShapeFactory.cpp
+  src/factory/SsLibElements.cpp
+  src/factory/SsLibFactoryYaml.cpp
+)
+source_group("Source Files\\factory" FILES ${sslib_Source_Files__factory})
+
+## io
+
+set(sslib_Source_Files__io
+  src/io/AtomFormatParser.cpp
+  src/io/AtomYamlFormatParser.cpp
+  src/io/BoostFilesystem.cpp
+  src/io/CastepReader.cpp
+  src/io/CellReaderWriter.cpp
+  src/io/Parsing.cpp
+  src/io/ResourceLocator.cpp
+  src/io/ResReaderWriter.cpp
+  src/io/SslibReaderWriter.cpp
+  src/io/StructureYamlGenerator.cpp
+  src/io/StructureReadWriteManager.cpp
+  src/io/IoFunctions.cpp
+  src/io/XyzReaderWriter.cpp
+)
+source_group("Source Files\\io" FILES ${sslib_Source_Files__io})
+
+## math
+
+set(sslib_Source_Files__math
+  src/math/Matrix.cpp
+  src/math/Random.cpp
+  src/math/RunningStats.cpp
+)
+source_group("Source Files\\math" FILES ${sslib_Source_Files__math})
+
+## os
+
+set(sslib_Source_Files__os
+  src/os/Process.cpp
+)
+source_group("Source Files\\os" FILES ${sslib_Source_Files__os})
+
+## potential
+
+set(sslib_Source_Files__potential
+  src/potential/CastepGeomOptimiser.cpp
+  src/potential/CastepRun.cpp
+  src/potential/CombiningRules.cpp
+  src/potential/FixedLatticeShapeConstraint.cpp
+  src/potential/OptimisationSettings.cpp
+  src/potential/PotentialData.cpp
+  src/potential/SimplePairPotential.cpp
+  src/potential/SimplePairPotentialData.cpp
+  src/potential/TpsdGeomOptimiser.cpp
+)
+source_group("Source Files\\potential" FILES ${sslib_Source_Files__potential})
+
+## utility
+
+set(sslib_Source_Files__utility
+  src/utility/DistanceMatrixComparator.cpp
+  src/utility/HeterogeneousMap.cpp
+  src/utility/HeterogeneousMapKey.cpp
+  src/utility/NamedProperty.cpp
+  src/utility/Outcome.cpp
+  src/utility/SortedDistanceComparator.cpp
+  src/utility/SortedDistanceComparatorEx.cpp
+  src/utility/StableComparison.cpp
+  src/utility/UniqueStructureSet.cpp
+  src/utility/UtilFunctions.cpp
+)
+source_group("Source Files\\utility" FILES ${sslib_Source_Files__utility})
+
+## yaml
+
+set(sslib_Source_Files__yaml
+  src/yaml/ProgramOptions.cpp
+  src/yaml/TranscodeBuildCell.cpp
+  src/yaml/TranscodeCommon.cpp
+  src/yaml/TranscodeFactory.cpp
+  src/yaml/TranscodeGeneral.cpp
+  src/yaml/TranscodeIo.cpp
+  src/yaml/TranscodePotential.cpp
+)
+source_group("Source Files\\yaml" FILES ${sslib_Source_Files__yaml})
+
+## yaml_schema
+
+set(sslib_Source_Files__yaml_schema
+  src/yaml_schema/SchemaMap.cpp
+  src/yaml_schema/SchemaParse.cpp
+)
+source_group("Source Files\\yaml_schema" FILES ${sslib_Source_Files__yaml_schema})
+
+set(sslib_Source_Files__
+)
+source_group("Header Files" FILES ${sslib_Source_Files__})
+
+set(sslib_Source_Files
+  ${sslib_Source_Files__analysis}
+  ${sslib_Source_Files__build_cell}
+  ${sslib_Source_Files__common}
+  ${sslib_Source_Files__common__event}
+  ${sslib_Source_Files__factory}
+  ${sslib_Source_Files__io}
+  ${sslib_Source_Files__math}
+  ${sslib_Source_Files__os}
+  ${sslib_Source_Files__potential}
+  ${sslib_Source_Files__utility}
+  ${sslib_Source_Files__yaml}
+  ${sslib_Source_Files__yaml_schema}
+  ${sslib_Source_Files__}
+)
+

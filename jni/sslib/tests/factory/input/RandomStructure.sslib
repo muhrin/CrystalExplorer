@@ -1,0 +1,43 @@
+
+builder:
+  genSphere:
+    radius: 10
+  atomsFormat: [spec]
+  atoms:
+    - [2 Na]
+    - [Na]
+    - group:
+        genSphere:
+          pos: 4 4 4
+          radius: 2
+        atomsRadius: 1
+        atoms:
+          - [2 Na]
+
+  unitCell:
+    params:     10 10 10 90 90 90
+    angles:
+      min:      10
+      max:      135
+    lengths:
+      min:      2
+      max:      4
+      maxRatio: 2
+      
+structure:
+  atomDefaults:
+    spec: Na
+    radius: 10
+  atomsFormat: [spec, pos]
+  atoms:
+    - info: [Na, 0 0 0]
+      radius: 
+    - [Cl, 0.5 0.5 0.5]
+    - [Cl, 0.5 0.5 0.5]
+    - [Cl, 0.5 0.5 0.5]
+    - [Cl, 0.5 0.5 0.5]
+    - [Cl, 0.5 0.5 0.5]
+    - [Cl, 0.5 0.5 0.5]
+    
+  cell:
+    abc: 2 2 2 60 120 90

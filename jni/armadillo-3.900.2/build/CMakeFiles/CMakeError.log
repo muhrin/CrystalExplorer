@@ -1,0 +1,30 @@
+Performing C++ SOURCE FILE Test ARMA_HAVE_STD_SNPRINTF failed with the following output:
+Change Dir: /home/martin/src/crystal_explorer/jni/armadillo-3.900.2/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/make "cmTryCompileExec2459803403/fast"
+/usr/bin/make -f CMakeFiles/cmTryCompileExec2459803403.dir/build.make CMakeFiles/cmTryCompileExec2459803403.dir/build
+make[1]: Entering directory `/home/martin/src/crystal_explorer/jni/armadillo-3.900.2/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/martin/src/crystal_explorer/jni/armadillo-3.900.2/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building CXX object CMakeFiles/cmTryCompileExec2459803403.dir/src.cxx.o
+/home/martin/dev/android-toolchain/bin/arm-linux-androideabi-g++   -DANDROID -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5__ --sysroot=/home/martin/dev/android-toolchain/sysroot -fsigned-char -march=armv7-a -mfloat-abi=softfp -mfpu=vfp -fdata-sections -ffunction-sections -fPIC -Wno-psabi -frtti -fexceptions  -DARMA_HAVE_STD_SNPRINTF -isystem /home/martin/dev/android-toolchain/sysroot/usr/include    -o CMakeFiles/cmTryCompileExec2459803403.dir/src.cxx.o -c /home/martin/src/crystal_explorer/jni/armadillo-3.900.2/build/CMakeFiles/CMakeTmp/src.cxx
+/home/martin/src/crystal_explorer/jni/armadillo-3.900.2/build/CMakeFiles/CMakeTmp/src.cxx: In function 'int main()':
+/home/martin/src/crystal_explorer/jni/armadillo-3.900.2/build/CMakeFiles/CMakeTmp/src.cxx:8:22: error: 'snprintf' is not a member of 'std'
+/home/martin/src/crystal_explorer/jni/armadillo-3.900.2/build/CMakeFiles/CMakeTmp/src.cxx:8:22: note: suggested alternative:
+/home/martin/dev/android-toolchain/sysroot/usr/include/stdio.h:254:6: note:   'snprintf'
+make[1]: *** [CMakeFiles/cmTryCompileExec2459803403.dir/src.cxx.o] Error 1
+make[1]: Leaving directory `/home/martin/src/crystal_explorer/jni/armadillo-3.900.2/build/CMakeFiles/CMakeTmp'
+make: *** [cmTryCompileExec2459803403/fast] Error 2
+
+Source file was:
+
+#include <cstdio>
+
+int
+main()
+  {
+  #if !defined(snprintf)
+    int i = sizeof(&(std::snprintf));
+  #endif
+  return 0;
+  }
+
