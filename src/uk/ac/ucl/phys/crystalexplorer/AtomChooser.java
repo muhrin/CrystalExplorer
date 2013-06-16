@@ -1,34 +1,46 @@
 package uk.ac.ucl.phys.crystalexplorer;
 
+import java.util.Random;
+
 import android.content.Context;
+import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.view.Gravity;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.Spinner;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 public class AtomChooser extends RelativeLayout implements SeekBar.OnSeekBarChangeListener {
 	
 	private static int SEEK_BAR_MAX = 99;
 	private static float MAX_ATOM_DRAW_STROKE = 10f;
+	private static int MAX_ATOMS = 5;
 	
 	public static class MinMax {
-		public MinMax(final double first, final double second) {
+		
+		private static final Random mRandom = new Random();
+		
+		public MinMax(final float first, final float second) {
 			this.min = Math.min(first, second);
 			this.max = Math.max(first, second);
 		}
 		
-		public double range() {
+		public float range() {
 			return max - min;
 		}
 		
-		public double bracket(final double x) {
+		public float bracket(final float x) {
 			if(x < min)
 				return min;
 			else if(x > max)
@@ -36,13 +48,17 @@ public class AtomChooser extends RelativeLayout implements SeekBar.OnSeekBarChan
 			return x;
 		}
 		
-		public double fractionInRange(double x) {
+		public float fractionInRange(float x) {
 			x = bracket(x);
-			return (x - min) * range();
+			return (x - min) / range();
 		}
 		
-		public final double min;
-		public final double max;
+		public float randomInRange() {
+			return mRandom.nextFloat() * range() + min;
+		}
+		
+		public final float min;
+		public final float max;
 	}
 	
 	public static class SavedState extends BaseSavedState {
@@ -67,8 +83,8 @@ public class AtomChooser extends RelativeLayout implements SeekBar.OnSeekBarChan
 		private SavedState(Parcel in) {
 			super(in);
 			myMaxAtoms = in.readInt();
-			mySizes = new MinMax(in.readDouble(), in.readDouble());
-			myStrengths = new MinMax(in.readDouble(), in.readDouble());	
+			mySizes = new MinMax(in.readFloat(), in.readFloat());
+			myStrengths = new MinMax(in.readFloat(), in.readFloat());	
 			myNumAtoms = in.readInt();
 			mySize = in.readInt();
 			myStrength = in.readInt();
@@ -102,10 +118,10 @@ public class AtomChooser extends RelativeLayout implements SeekBar.OnSeekBarChan
 		public void writeToParcel(Parcel destination, int flags) {
 			super.writeToParcel(destination, flags);
 			destination.writeInt(myMaxAtoms);
-			destination.writeDouble(mySizes.min);
-			destination.writeDouble(mySizes.max);
-			destination.writeDouble(myStrengths.min);
-			destination.writeDouble(myStrengths.max);
+			destination.writeFloat(mySizes.min);
+			destination.writeFloat(mySizes.max);
+			destination.writeFloat(myStrengths.min);
+			destination.writeFloat(myStrengths.max);
 			destination.writeInt(myNumAtoms);
 			destination.writeInt(mySize);
 			destination.writeInt(myStrength);
@@ -133,24 +149,34 @@ public class AtomChooser extends RelativeLayout implements SeekBar.OnSeekBarChan
 	
 	public AtomChooser(Context context) {
 		super(context);
-		myMaxAtoms = 10;
-		mySizes = new MinMax(0.2, 2.0);
-		myStrengths = new MinMax(0.2, 2.0);
-		init(context);
+		myMaxAtoms = MAX_ATOMS;
+		mySizes = new MinMax(0.2f, 2.0f);
+		myStrengths = new MinMax(0.2f, 2.0f);
+		setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+		init(context, 0xFF0000);
 	}
+	
+	public AtomChooser(Context context, final int atomColour) {
+		super(context);
+		myMaxAtoms = MAX_ATOMS;
+		mySizes = new MinMax(0.2f, 2.0f);
+		myStrengths = new MinMax(0.2f, 2.0f);
+		init(context, atomColour);
+	}	
 
 	public AtomChooser(
 			Context context,
 			int maxAtoms,
-			double minSize,
-			double maxSize,
-			double minStrength,
-			double maxStrength) {
+			float minSize,
+			float maxSize,
+			float minStrength,
+			float maxStrength,
+			int atomColour) {
 		super(context);
-		myMaxAtoms = 10;
-		mySizes = new MinMax(0.2, 2.0);
-		myStrengths = new MinMax(0.2, 2.0);
-		init(context);
+		myMaxAtoms = MAX_ATOMS;
+		mySizes = new MinMax(0.2f, 2.0f);
+		myStrengths = new MinMax(0.2f, 2.0f);
+		init(context, atomColour);
 	}
 	
 	public int getNumAtoms() {
@@ -162,18 +188,18 @@ public class AtomChooser extends RelativeLayout implements SeekBar.OnSeekBarChan
 		}
 	}
 	
-	public double getSize() {
-		return (double)atomSizeSlider.getProgress() / (double)atomSizeSlider.getMax() * mySizes.range() + mySizes.min;
+	public float getSize() {
+		return (float)atomSizeSlider.getProgress() / (float)atomSizeSlider.getMax() * mySizes.range() + mySizes.min;
 	}
-	public void setSize(final double size) {
-		atomSizeSlider.setProgress((int)(mySizes.fractionInRange(size) * (double)atomSizeSlider.getMax()));
+	public void setSize(final float size) {
+		atomSizeSlider.setProgress((int)(mySizes.fractionInRange(size) * (float)atomSizeSlider.getMax()));
 	}
 	
-	public double getStrength() {
-		return (double)atomStrengthSlider.getProgress() / (double)atomStrengthSlider.getMax() * myStrengths.range() + myStrengths.min;
+	public float getStrength() {
+		return (float)atomStrengthSlider.getProgress() / (float)atomStrengthSlider.getMax() * myStrengths.range() + myStrengths.min;
 	}
-	public void setStrength(final double strength) {
-		atomStrengthSlider.setProgress((int)(myStrengths.fractionInRange(strength) * (double)atomStrengthSlider.getMax())); 
+	public void setStrength(final float strength) {
+		atomStrengthSlider.setProgress((int)(myStrengths.fractionInRange(strength) * (float)atomStrengthSlider.getMax())); 
 	}
 	
 	@Override
@@ -191,14 +217,25 @@ public class AtomChooser extends RelativeLayout implements SeekBar.OnSeekBarChan
 	
 	@Override
 	protected void onRestoreInstanceState(Parcelable state) {
-		SavedState savedState = (SavedState)state;
-		super.onRestoreInstanceState(savedState.getSuperState());
+		if(state == null)
+			return;
 		
-		atomSizeSlider.setMax(SEEK_BAR_MAX);
-		atomStrengthSlider.setMax(SEEK_BAR_MAX);
-		setNumAtoms(savedState.getNumAtoms());
-		atomSizeSlider.setProgress(savedState.getSize());
-		atomStrengthSlider.setProgress(savedState.getStrength());
+		SavedState savedState = null;
+		try {
+			savedState = (SavedState)state;
+		} catch (ClassCastException e) {
+		}
+		
+		if(savedState != null) {
+			super.onRestoreInstanceState(savedState.getSuperState());
+			
+			atomSizeSlider.setMax(SEEK_BAR_MAX);
+			atomStrengthSlider.setMax(SEEK_BAR_MAX);
+			setNumAtoms(savedState.getNumAtoms());
+			atomSizeSlider.setProgress(savedState.getSize());
+			atomStrengthSlider.setProgress(savedState.getStrength());
+		} else
+			super.onRestoreInstanceState(state);
 	}
 	
 	@Override
@@ -207,11 +244,22 @@ public class AtomChooser extends RelativeLayout implements SeekBar.OnSeekBarChan
 	}
 	
 	@Override
-	protected void onDraw(Canvas canvas) {
+	protected void dispatchDraw(Canvas canvas) {
 		super.dispatchDraw(canvas);
+		
+		final float height = (float)getHeight();
+		final float width = (float)getWidth();
+		
+
+		if (Build.VERSION.SDK_INT >= 11) {
+			if (canvas.isHardwareAccelerated()) {
+				setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+		    }
+		}
 		
 		canvas.drawCircle(myAtomDrawX, myAtomDrawY, myAtomDrawStrokeRadius, myAtomStrokePaint);
 		canvas.drawCircle(myAtomDrawX, myAtomDrawY, myAtomDrawRadius, myPaint);
+		canvas.drawLine(0f, height - 1f, width, height - 1f, mFooterLinePaint);
 	}
 	
 	@Override
@@ -220,12 +268,10 @@ public class AtomChooser extends RelativeLayout implements SeekBar.OnSeekBarChan
 	}
 	@Override
 	public void onStartTrackingTouch(SeekBar seekBar) {
-		// TODO Auto-generated method stub
 	}
 
 	@Override
 	public void onStopTrackingTouch(SeekBar seekBar) {
-		// TODO Auto-generated method stub
 	}
 	
 	public Parcelable saveInstanceState() {
@@ -236,17 +282,26 @@ public class AtomChooser extends RelativeLayout implements SeekBar.OnSeekBarChan
 		onRestoreInstanceState(state);
 	}
 	
-	private void init(Context context) {
-		
-		setWillNotDraw(false);
-		
+	private void init(Context context, final int atomColour) {
+
+		// Drawing stuff
 		myPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		myPaint.setStyle(Paint.Style.FILL);
-		myPaint.setARGB(180, 255, 0, 0);
+		myPaint.setColor(atomColour);
+		myPaint.setAlpha(150);
 		
 		myAtomStrokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		myAtomStrokePaint.setStyle(Paint.Style.STROKE);
-		myAtomStrokePaint.setARGB(200, 0, 0, 0);
+		myAtomStrokePaint.setARGB(170, 40, 40, 40);
+		myAtomStrokePaint.setMaskFilter(new BlurMaskFilter(5f, BlurMaskFilter.Blur.NORMAL));
+		
+		mFooterLinePaint = new Paint();
+		mFooterLinePaint.setStyle(Paint.Style.STROKE);
+		mFooterLinePaint.setARGB(255, 170, 170, 170);
+		
+		RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+		setPadding(16, 16, 16, 16);
+		setLayoutParams(lp);
 		
 		atomSizeSlider = new SeekBar(context);
 		atomSizeSlider.setMax(SEEK_BAR_MAX);
@@ -268,34 +323,36 @@ public class AtomChooser extends RelativeLayout implements SeekBar.OnSeekBarChan
 		numAtomsPicker.setAdapter(numAtomsAdapter);
 		addView(numAtomsPicker);
 		
-		LinearLayout atomOptions = new LinearLayout(context);
-		atomOptions.setOrientation(LinearLayout.VERTICAL);
+		TableLayout atomOptions = new TableLayout(context);
+		TableRow sizeRow = new TableRow(context);
+		sizeRow.setGravity(Gravity.CENTER_VERTICAL);
+		TableRow strengthRow = new TableRow(context);
+		strengthRow.setGravity(Gravity.CENTER_VERTICAL);
 		
 		TextView tvAtomSize = new TextView(context);
 		tvAtomSize.setText("Size");
 		tvAtomSize.setBackgroundColor(Color.TRANSPARENT);
-		atomOptions.addView(tvAtomSize);
-		
-		RelativeLayout.LayoutParams sizeLayout = new RelativeLayout.LayoutParams(
-				RelativeLayout.LayoutParams.MATCH_PARENT,
-				RelativeLayout.LayoutParams.WRAP_CONTENT);
-		atomSizeSlider.setLayoutParams(sizeLayout);
-		atomSizeSlider.setId(2);
-		atomSizeSlider.setOnSeekBarChangeListener(this);
-		atomOptions.addView(atomSizeSlider);
+		tvAtomSize.setId(10);
+		sizeRow.addView(tvAtomSize);
 		
 		TextView tvAtomStrength = new TextView(context);
 		tvAtomStrength.setText("Strength");
 		tvAtomStrength.setBackgroundColor(Color.TRANSPARENT);
-		atomOptions.addView(tvAtomStrength);
+		tvAtomStrength.setId(11);
+		strengthRow.addView(tvAtomStrength);
 		
-		RelativeLayout.LayoutParams strengthLayout = new RelativeLayout.LayoutParams(
-				RelativeLayout.LayoutParams.MATCH_PARENT,
-				RelativeLayout.LayoutParams.WRAP_CONTENT);
-		atomStrengthSlider.setLayoutParams(strengthLayout);
+		atomSizeSlider.setId(2);
+		atomSizeSlider.setOnSeekBarChangeListener(this);
+		sizeRow.addView(atomSizeSlider);
+
 		atomStrengthSlider.setId(3);
 		atomStrengthSlider.setOnSeekBarChangeListener(this);
-		atomOptions.addView(atomStrengthSlider);
+		strengthRow.addView(atomStrengthSlider);
+
+		atomOptions.addView(sizeRow);
+		atomOptions.addView(strengthRow);
+		atomOptions.setColumnStretchable(1, true);
+		atomOptions.setGravity(Gravity.CENTER_VERTICAL);
 		
 		RelativeLayout.LayoutParams atomOptionsLayoutParams = new RelativeLayout.LayoutParams(
 				RelativeLayout.LayoutParams.MATCH_PARENT,
@@ -303,6 +360,9 @@ public class AtomChooser extends RelativeLayout implements SeekBar.OnSeekBarChan
 		atomOptionsLayoutParams.addRule(RelativeLayout.RIGHT_OF, numAtomsPicker.getId());
 		atomOptions.setLayoutParams(atomOptionsLayoutParams);
 		addView(atomOptions);
+		
+		setSize(mySizes.randomInRange());
+		setStrength(myStrengths.randomInRange());
 		
 		updateAtomDrawSettings();
 		invalidate();
@@ -316,7 +376,7 @@ public class AtomChooser extends RelativeLayout implements SeekBar.OnSeekBarChan
 		
 		final float atomDrawStrokeWidth = (float)getStrength() / (float)myStrengths.max * MAX_ATOM_DRAW_STROKE;
 		myAtomDrawStrokeRadius = myAtomDrawRadius + 0.5f * atomDrawStrokeWidth;
-		myAtomStrokePaint.setStrokeWidth(atomDrawStrokeWidth);
+		myAtomStrokePaint.setStrokeWidth(atomDrawStrokeWidth + 0.001f);
 		
 		// Account for padding
 		final float padLeft = getPaddingLeft();
@@ -329,6 +389,11 @@ public class AtomChooser extends RelativeLayout implements SeekBar.OnSeekBarChan
 		invalidate();
 	}
 	
+	public int getColour() {
+		return myPaint.getColor();
+	}
+	
+	private Paint mFooterLinePaint;
 	private Paint myPaint;
 	private Paint myAtomStrokePaint;
 	private float myAtomDrawX;
@@ -342,4 +407,5 @@ public class AtomChooser extends RelativeLayout implements SeekBar.OnSeekBarChan
 	private SeekBar atomSizeSlider;
 	private SeekBar atomStrengthSlider;
 	private Spinner numAtomsPicker;
+
 }

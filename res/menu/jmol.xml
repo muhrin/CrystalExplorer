@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item android:title="Ball and Stick" android:id="@+id/ballandstick"></item>
+    <item android:title="Sticks" android:id="@+id/sticks"></item>
+    <item android:title="Wireframe" android:id="@+id/wireframe"></item>
+</menu>
