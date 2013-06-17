@@ -8,6 +8,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.Runtime;
+import java.util.concurrent.ExecutorService;
 
 import android.os.AsyncTask;
 import android.os.CountDownTimer;
@@ -92,6 +94,26 @@ public class StructurePredictionTask extends AsyncTask<StructureProperties, Inte
 		private float mLowestEnergy;
 		private int mTimesFound;
 		private String mErrorMessage;
+		
+		class Optimiser implements Runnable {
+			private final PredictionRun mRun;
+			private final StructureProperties mStructure;
+			private final File mStructureFile;
+			
+			Optimiser(final PredictionRun run, final File structureFile, final StructureProperties structureProperties) {
+				mRun = run;
+				mStructureFile = new File(structureFile.getPath());
+				mStructure = structureProperties;
+			}
+
+			@Override
+			public void run() {
+				final String result = NdkCrystalExplorer.generateStructure(mStructureFile.getPath(),
+						mStructure.numAtoms, mStructure.atomNumbers, mStructure.atomSizes, mStructure.atomStrengths);
+				mRun.updateWith(result, mStructureFile);
+				
+			}
+		}
 
 		PredictionRun(StructureProperties structure, float precision, File saveDir, int maxTimesFound) {
 			mStructure = structure;
@@ -165,7 +187,7 @@ public class StructurePredictionTask extends AsyncTask<StructureProperties, Inte
 		}
 
 		public boolean hasStructure() {
-			return !mLowestPath.isEmpty();
+			return mLowestPath.length() != 0;
 		}
 
 		public String getLowestPath() {
@@ -185,6 +207,9 @@ public class StructurePredictionTask extends AsyncTask<StructureProperties, Inte
 		}
 
 		public void start() {
+			
+			final ExecutorService pool = new BlockingFixedThreadPool(Runtime.getRuntime().availableProcessors());
+			
 			int i = 0;
 			mStop = false;
 			mStopAfterNext = false;
@@ -192,15 +217,15 @@ public class StructurePredictionTask extends AsyncTask<StructureProperties, Inte
 				// File to save the structure to
 				File structureFile = new File(mSaveDir, "out"
 						+ Integer.toString(i++) + ".res");
-				String result = NdkCrystalExplorer.generateStructure(structureFile.toString(),
-						mStructure.numAtoms, mStructure.atomNumbers, mStructure.atomSizes, mStructure.atomStrengths);
+				pool.execute(new Optimiser(this, structureFile, mStructure));
 				
-				if(updateWith(result, structureFile) && mStopAfterNext)
+				if(mStopAfterNext && hasStructure())
 					mStop = true;
 
 				if (getTimesFound() >= mMaxTimesFound)
 					mStop = true;
 			}
+			pool.shutdownNow();
 		}
 
 		public void stop() {
@@ -215,7 +240,7 @@ public class StructurePredictionTask extends AsyncTask<StructureProperties, Inte
 			mErrorMessage = msg;
 		}
 
-		private void setStructure(File structureFile, float energy) {
+		synchronized private void setStructure(File structureFile, float energy) {
 			mErrorMessage = "";
 			if (hasStructure()) {
 				// Is the energy the same?
@@ -245,7 +270,7 @@ public class StructurePredictionTask extends AsyncTask<StructureProperties, Inte
 
 	}
 
-	private final static float ENERGY_TOLERANCE = 1e-3f;
+	private final static float ENERGY_TOLERANCE = 5e-4f;
 	public final static long DEFAULT_PREDICTION_TIME = 3000;
 	public final static long DEFAULT_PREDICTION_TIME_GRACE = 2000;
 

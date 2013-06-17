@@ -89,7 +89,7 @@ public class JmolFragment extends Fragment implements JmolCallbackListener {
 		if(savedInstanceState != null) {
 			processAtomInfo(savedInstanceState);
 			mCurrentStructure = savedInstanceState.getString(STRUCTURE_PATH);
-			if(!mCurrentStructure.isEmpty()) {
+			if(mCurrentStructure.length() != 0) {
 				loadStructure(mCurrentStructure, true);
 			}
 		} else if(args != null) {
@@ -110,7 +110,7 @@ public class JmolFragment extends Fragment implements JmolCallbackListener {
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		if(!mCurrentStructure.isEmpty()) {
+		if(mCurrentStructure.length() != 0) {
 			outState.putString(STRUCTURE_PATH, mCurrentStructure);
 		}
 		outState.putAll(mSaveSettings);
@@ -176,7 +176,7 @@ public class JmolFragment extends Fragment implements JmolCallbackListener {
 			break;
 		case R.id.ballandstick:
 			String script = "wireframe -0.15; ";
-			if (!styleSettings.isEmpty()) {
+			if (styleSettings.length() != 0) {
 				script += styleSettings;
 			}
 			script += SCRIPT_BALL_AND_STICK;
@@ -256,7 +256,7 @@ public class JmolFragment extends Fragment implements JmolCallbackListener {
 			loadString += " {2 2 2}; ";
 		else
 			loadString += "; ";
-		if (!styleSettings.isEmpty()) {
+		if (styleSettings.length() != 0) {
 			loadString += styleSettings + "; ";
 		}
 		loadString += SCRIPT_BALL_AND_STICK;
