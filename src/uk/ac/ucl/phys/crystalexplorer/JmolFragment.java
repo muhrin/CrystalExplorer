@@ -55,7 +55,6 @@ public class JmolFragment extends Fragment implements JmolCallbackListener {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		imageView = new JmolDisplay(getActivity());
-		imageView.setWillNotDraw(false);
 		
 		if (viewer == null) {
 			// bit of a chicken and an egg here, but

@@ -97,6 +97,7 @@ public class JmolDisplay extends SurfaceView implements UpdateListener {
 
 	public JmolDisplay(Context context) {
 		super(context);
+		setWillNotDraw(false);
 		mySensorManager = (SensorManager)context.getSystemService(Context.SENSOR_SERVICE);
 		
 		Log.w("Jmol", "JmolImageView " + this);
@@ -104,6 +105,8 @@ public class JmolDisplay extends SurfaceView implements UpdateListener {
 
 	@Override
 	protected void onAttachedToWindow() {
+		super.onAttachedToWindow();
+		
 		if (myViewer == null)
 			return;
 

@@ -215,8 +215,8 @@ public class StructurePredictionTask extends AsyncTask<StructureProperties, Inte
 			mStopAfterNext = false;
 			while (!mStop) {
 				// File to save the structure to
-				File structureFile = new File(mSaveDir, "out"
-						+ Integer.toString(i++) + ".res");
+				File structureFile = new File(mSaveDir, generateStructureName()
+						+ "-" + Integer.toString(i++) + ".res");
 				pool.execute(new Optimiser(this, structureFile, mStructure));
 				
 				if(mStopAfterNext && hasStructure())
@@ -267,6 +267,10 @@ public class StructurePredictionTask extends AsyncTask<StructureProperties, Inte
 		public int getMaxTimesFound() {
 			return mMaxTimesFound;
 		}
+		
+		private String generateStructureName() {
+			return Long.toString(System.currentTimeMillis());
+		}
 
 	}
 
@@ -279,6 +283,7 @@ public class StructurePredictionTask extends AsyncTask<StructureProperties, Inte
 	private final StructurePredictionListener mListener;
 	private boolean mTakingLong;
 	private PredictionTimer mPredictionTimer;
+	private boolean mCancelled;
 
 	public StructurePredictionTask(File filesDir, StructurePredictionListener listener) {
 		mFilesDir = filesDir;
@@ -308,11 +313,20 @@ public class StructurePredictionTask extends AsyncTask<StructureProperties, Inte
 		publishProgress((int)fractionalProgress);
 	}
 	
+	public void stopAndCancel() {
+		if(mCurrentRun != null) {
+			mCurrentRun.stop();
+		}
+		mCancelled = true;
+	}
 
 	@Override
 	protected void onPreExecute() {
-		if(mPredictionTimer != null)
+		mCancelled = false;
+		if(mPredictionTimer != null) {
 			mPredictionTimer.kill();
+			mPredictionTimer = null;
+		}
 		
 		mPredictionTimer = new PredictionTimer(this, PredictionTimerType.PREDICTION,
 				DEFAULT_PREDICTION_TIME);
@@ -349,7 +363,7 @@ public class StructurePredictionTask extends AsyncTask<StructureProperties, Inte
 	
 	@Override
 	protected final void  onProgressUpdate (Integer... values) {
-		if(mCurrentRun != null && mListener != null) {
+		if(mCurrentRun != null && mListener != null && !mCancelled) {
 			mListener.onStructurePredictionProgress(values[0], mTakingLong);
 		}
 	}
@@ -360,7 +374,7 @@ public class StructurePredictionTask extends AsyncTask<StructureProperties, Inte
 			mPredictionTimer = null;
 		}
 		
-		if(mListener != null) {
+		if(mListener != null && !mCancelled) {
 			if(outcome.code == OutcomeCode.SUCCESS)
 				mListener.onStructurePredicted(outcome.structurePath);
 			else

@@ -12,5 +12,7 @@
     <string name="prediction_failed">Sorry, I couldn\'t predict your structure - try something a little simpler.</string>
     <string name="instructions">Choose a size and strength for each atom and how many you want on the left.  To add more atoms push the plus in the top right.  To predict the structure hit \'Predict\'.</string>
     <string name="about_text">Copyright \u00A9 Martin Uhrin, 2013\n\nBig thanks to the following people for input and beta testing:\nRobert Antonio, Seto Balian, Chris Pickard, Hannah Smith\n\nCrystalExplorer uses the following software and libraries:\n-Jmol\n-Boost\n-Armadillo C++\n-Yaml-cpp\n</string>
+    <string name="button_plus">+</string>
+    <string name="button_minus">-</string>
 
 </resources>

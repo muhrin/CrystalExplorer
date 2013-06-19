@@ -1,5 +1,6 @@
 package uk.ac.ucl.phys.crystalexplorer;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import uk.ac.ucl.phys.crystalexplorer.StructurePredictionTask.OutcomeCode;
@@ -11,6 +12,7 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -64,7 +66,7 @@ public class AtomsSelectionFragment extends Fragment implements OnClickListener,
 				Bundle atomInfoBundle);
 	}
 
-	private ProgressDialog mDialog;
+	private ProgressDialog mProgressDialog;
 	private StructurePredictionTask mStructurePredictionTask;
 
 	public AtomsSelectionFragment() {
@@ -78,11 +80,7 @@ public class AtomsSelectionFragment extends Fragment implements OnClickListener,
 		// Would like to participate in options menu
 		setHasOptionsMenu(true);
 		
-		mDialog = new ProgressDialog(getActivity());
-		mDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-		mDialog.setMessage(getString(R.string.predicting_structure));
-		mDialog.setMax(100);
-		mDialog.setOnCancelListener(this);
+		resetProgressDialog();
 	}
 	
 	@Override
@@ -179,6 +177,18 @@ public class AtomsSelectionFragment extends Fragment implements OnClickListener,
 					atomChooser.saveInstanceState());
 		}
 	}
+	
+	@Override
+	public void onPause() {
+		super.onPause();
+		
+		if(mStructurePredictionTask != null) {
+			mStructurePredictionTask.cancel(true);
+		}
+		if(mProgressDialog != null && mProgressDialog.isShowing()) {
+			mProgressDialog.dismiss();
+		}
+	}
 
 	@Override
 	public void onClick(View v) {
@@ -227,11 +237,9 @@ public class AtomsSelectionFragment extends Fragment implements OnClickListener,
 			structure.atomStrengths[i] = atomChoosers.get(i).getStrength();
 		}
 
-		mDialog.setMessage(getString(R.string.predicting_structure));
-		mDialog.setProgress(0);
-		mDialog.show();
+		mProgressDialog.show();
 		
-		mStructurePredictionTask = new StructurePredictionTask(getActivity().getFilesDir(), this);
+		mStructurePredictionTask = new StructurePredictionTask(getStructureSaveDir(), this);
 		mStructurePredictionTask.execute(structure);
 	}
 
@@ -262,16 +270,14 @@ public class AtomsSelectionFragment extends Fragment implements OnClickListener,
 	
 	@Override
 	public void onStructurePredicted(String path) {
-		if(mDialog != null) {
-			mDialog.dismiss();
-		}
+		resetProgressDialog();
+		
 		myCallback.onStructurePredicted(path, createAtomInfoBundle());
 	}
 
 	@Override
 	public void onStructurePredictionFailed(OutcomeCode err, String msg) {
-		if(mDialog != null)
-			mDialog.dismiss();
+		resetProgressDialog();
 		
 		// 1. Instantiate an AlertDialog.Builder with its constructor
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -287,13 +293,13 @@ public class AtomsSelectionFragment extends Fragment implements OnClickListener,
 
 	@Override
 	public void onStructurePredictionProgress(int percentage, boolean takingLong) {
-		if(mDialog != null) {
+		if(mProgressDialog != null && mProgressDialog.isShowing()) {
 			if(!takingLong)
-				mDialog.setProgress(percentage);
+				mProgressDialog.setProgress(percentage);
 			else {
-				if(percentage != mDialog.getMax())
-					mDialog.setProgress(mDialog.getMax());
-				mDialog.setMessage(getString(R.string.predicting_structure_taking_long));
+				if(percentage != mProgressDialog.getMax())
+					mProgressDialog.setProgress(mProgressDialog.getMax());
+				mProgressDialog.setMessage(getString(R.string.predicting_structure_taking_long));
 			}
 		}
 	}
@@ -303,5 +309,31 @@ public class AtomsSelectionFragment extends Fragment implements OnClickListener,
 		if(mStructurePredictionTask != null) {
 			mStructurePredictionTask.cancel(true);
 		}
+		resetProgressDialog();
+	}
+	
+	private void resetProgressDialog() {
+		if(mProgressDialog == null) {
+			mProgressDialog = new ProgressDialog(getActivity());
+			mProgressDialog.setOnCancelListener(this);
+		}
+		
+		if(mProgressDialog.isShowing()) {
+			mProgressDialog.dismiss();
+		}
+		
+		mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+		mProgressDialog.setMessage(getString(R.string.predicting_structure));
+		mProgressDialog.setProgress(0);
+		mProgressDialog.setMax(100);
+	}
+	
+	private File getStructureSaveDir() {
+		String state = Environment.getExternalStorageState();
+	    if (Environment.MEDIA_MOUNTED.equals(state) && !Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+	        return getActivity().getExternalFilesDir(null);
+	    } else {
+	    	return getActivity().getFilesDir();
+	    }
 	}
 }
