@@ -43,7 +43,8 @@ JNIEXPORT jstring JNICALL Java_uk_ac_ucl_phys_crystalexplorer_NdkCrystalExplorer
   jint numAtoms_,
   jintArray numbers_,
   jfloatArray sizes_,
-  jfloatArray strengths_
+  jfloatArray strengths_,
+  jboolean isCluster
 );
 
 }
@@ -55,23 +56,29 @@ JNIEXPORT jstring JNICALL Java_uk_ac_ucl_phys_crystalexplorer_NdkCrystalExplorer
   jint numAtoms_,
   jintArray numbers_,
   jfloatArray sizes_,
-  jfloatArray strengths_
+  jfloatArray strengths_,
+  jboolean isCluster
 )
 {
 	const ::std::string elements[] = {"H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si", "P", "S", "Cl", "Ar", "K", "Ca", "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br", "Kr", "Rb", "Sr", "Y", "Zr", "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn", "Sb", "Te", "I", "Xe", "Cs", "Ba", "La", "Ce", "Pr", "Nd", "Pm", "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb", "Lu", "Hf", "Ta", "W", "Re", "Os", "Ir", "Pt", "Au", "Hg", "Tl", "Pb", "Bi", "Po", "At", "Rn", "Fr", "Ra", "Ac", "Th", "Pa", "U", "Np", "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No", "Lr", "Rf", "Db", "Sg", "Bh", "Hs", "Mt"};
 
 	int numAtoms = numAtoms_;
 	ssio::ResourceLocator structureFile;
-	structureFile.set(::std::string(env->GetStringUTFChars(outFile, NULL)));
+	const char * outFileCStr = env->GetStringUTFChars(outFile, NULL);
+	structureFile.set(::std::string(outFileCStr));
+	env->ReleaseStringUTFChars(outFile, outFileCStr);
 
 	ssc::AtomSpeciesDatabase speciesDb;
 
-	::sstbx::UniquePtr<ssbc::RandomUnitCellGenerator>::Type cellGenerator(new ssbc::RandomUnitCellGenerator());
-	cellGenerator->setMinAngles(65.0);
-	cellGenerator->setMaxAngles(115.0);
-	cellGenerator->setContentsMultiplier(2.0);
 	ssbc::StructureBuilder builder;
-	builder.setUnitCellGenerator(::sstbx::UniquePtr<ssbc::IUnitCellGenerator>::Type(cellGenerator.release()));
+	if(isCluster == JNI_FALSE)
+	{
+		::sstbx::UniquePtr<ssbc::RandomUnitCellGenerator>::Type cellGenerator(new ssbc::RandomUnitCellGenerator());
+		cellGenerator->setMinAngles(65.0);
+		cellGenerator->setMaxAngles(115.0);
+		cellGenerator->setContentsMultiplier(2.0);
+		builder.setUnitCellGenerator(::sstbx::UniquePtr<ssbc::IUnitCellGenerator>::Type(cellGenerator.release()));
+	}
 
 	jint * numbers = env->GetIntArrayElements(numbers_, NULL);
 	jfloat * sizes = env->GetFloatArrayElements(sizes_, NULL);

@@ -8,6 +8,6 @@ public class NdkCrystalExplorer {
 	}
 
 	public static native String generateStructure(String outFile, int numAtoms,
-			int numbers[], float[] sizes, float[] strengths);
+			int numbers[], float[] sizes, float[] strengths, boolean isCluster);
 
 }

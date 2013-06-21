@@ -14,5 +14,6 @@
     <string name="about_text">Copyright \u00A9 Martin Uhrin, 2013\n\nBig thanks to the following people for input and beta testing:\nRobert Antonio, Seto Balian, Chris Pickard, Hannah Smith\n\nCrystalExplorer uses the following software and libraries:\n-Jmol\n-Boost\n-Armadillo C++\n-Yaml-cpp\n</string>
     <string name="button_plus">+</string>
     <string name="button_minus">-</string>
+    <string name="is_cluster">Cluster</string>
 
 </resources>

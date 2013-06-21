@@ -109,7 +109,7 @@ public class StructurePredictionTask extends AsyncTask<StructureProperties, Inte
 			@Override
 			public void run() {
 				final String result = NdkCrystalExplorer.generateStructure(mStructureFile.getPath(),
-						mStructure.numAtoms, mStructure.atomNumbers, mStructure.atomSizes, mStructure.atomStrengths);
+						mStructure.numAtoms, mStructure.atomNumbers, mStructure.atomSizes, mStructure.atomStrengths, mStructure.isCluster);
 				mRun.updateWith(result, mStructureFile);
 				
 			}

@@ -11,7 +11,6 @@ import org.jmol.api.JmolViewer;
 import org.jmol.util.JmolFont;
 import org.jmol.viewer.ActionManager;
 import org.jmol.viewer.Viewer;
-import org.openscience.jmolandroid.api.JmolFileAdapter;
 
 public class Platform implements ApiPlatform {
 	
@@ -196,11 +195,11 @@ public class Platform implements ApiPlatform {
 	}
 
 	public JmolFileAdapterInterface getFileAdapter() {
-		return new JmolFileAdapter();
+		return new FileAdapter();
 	}
 
 	public JmolFileInterface newFile(String name) {
-		return JmolFileAdapter.newFile(name);
+		return FileAdapter.newFile(name);
 	}
 
 	public boolean isSingleThreaded() {

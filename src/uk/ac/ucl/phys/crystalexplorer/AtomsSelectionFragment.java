@@ -20,6 +20,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
@@ -80,6 +81,19 @@ public class AtomsSelectionFragment extends Fragment implements OnClickListener,
 		// Would like to participate in options menu
 		setHasOptionsMenu(true);
 		
+		
+		if (savedInstanceState != null) {
+			final int numAtomChoosers = savedInstanceState.getInt(NUM_ATOMS);
+			for (int i = 0; i < numAtomChoosers; ++i) {
+				final AtomChooser atom = createAtom();
+
+				if (atom != null)
+					atom.restoreInstanceState(savedInstanceState
+							.getParcelable("atomChooser"
+									+ Integer.toString(CHOOSER_ID_OFFSET + i)));
+			}
+		}
+		
 		resetProgressDialog();
 	}
 	
@@ -123,17 +137,7 @@ public class AtomsSelectionFragment extends Fragment implements OnClickListener,
 	public void onViewStateRestored(Bundle savedInstanceState) {
 		super.onViewStateRestored(savedInstanceState);
 
-		if (savedInstanceState != null) {
-			final int numAtomChoosers = savedInstanceState.getInt(NUM_ATOMS);
-			for (int i = 0; i < numAtomChoosers; ++i) {
-				AtomChooser atom = addAtom();
-
-				if (atom != null)
-					atom.restoreInstanceState(savedInstanceState
-							.getParcelable("atomChooser"
-									+ Integer.toString(CHOOSER_ID_OFFSET + i)));
-			}
-		} else if (!atomChoosers.isEmpty()) {
+		if(!atomChoosers.isEmpty()) {
 			for (AtomChooser chooser : atomChoosers) {
 				if (chooser.getParent() == null)
 					content.addView(chooser);
@@ -198,8 +202,8 @@ public class AtomsSelectionFragment extends Fragment implements OnClickListener,
 			break;
 		}
 	}
-
-	private AtomChooser addAtom() {
+	
+	private AtomChooser createAtom() {
 		if (atomChoosers.size() < MAX_ATOMS) {
 			AtomChooser atomChooser = new AtomChooser(getActivity(),
 					ELEMENT_COLOURS[atomChoosers.size()]);
@@ -208,9 +212,18 @@ public class AtomsSelectionFragment extends Fragment implements OnClickListener,
 					RelativeLayout.LayoutParams.WRAP_CONTENT);
 			atomChooser.setLayoutParams(layout);
 			atomChooser.setId(CHOOSER_ID_OFFSET + atomChoosers.size());
+			atomChoosers.add(atomChooser);
+
+			return atomChooser;
+		}
+		return null;
+	}
+
+	private AtomChooser addAtom() {
+		if (atomChoosers.size() < MAX_ATOMS) {
+			final AtomChooser atomChooser = createAtom();
 
 			content.addView(atomChooser);
-			atomChoosers.add(atomChooser);
 			content.invalidate();
 
 			return atomChooser;
@@ -236,6 +249,8 @@ public class AtomsSelectionFragment extends Fragment implements OnClickListener,
 			structure.atomSizes[i] = atomChoosers.get(i).getSize();
 			structure.atomStrengths[i] = atomChoosers.get(i).getStrength();
 		}
+		final CheckBox isCluster = (CheckBox)getActivity().findViewById(R.id.is_cluster);
+		structure.isCluster = isCluster.isChecked();
 
 		mProgressDialog.show();
 		

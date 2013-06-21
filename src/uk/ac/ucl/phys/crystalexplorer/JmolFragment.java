@@ -154,14 +154,6 @@ public class JmolFragment extends Fragment implements JmolCallbackListener {
 	}
 
 	@Override
-	public void onPrepareOptionsMenu(Menu menu) {
-		MenuItem styleMenu = menu.findItem(R.id.style);
-
-		if (styleMenu != null)
-			styleMenu.setEnabled(viewer.getAtomCount() > 0);
-	}
-
-	@Override
 	public void onCreateOptionsMenu (Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.jmol, menu);
 	}
@@ -170,9 +162,6 @@ public class JmolFragment extends Fragment implements JmolCallbackListener {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle item selection
 		switch (item.getItemId()) {
-		case R.id.cpkspacefill:
-			script("spacefill only; " + styleSettings);
-			break;
 		case R.id.ballandstick:
 			String script = "wireframe -0.15; ";
 			if (styleSettings.length() != 0) {
@@ -187,12 +176,6 @@ public class JmolFragment extends Fragment implements JmolCallbackListener {
 			break;
 		case R.id.wireframe:
 			script("wireframe only; " + styleSettings);
-			break;
-		case R.id.cartoon:
-			script("cartoons only;color cartoons structure");
-			break;
-		case R.id.trace:
-			script("trace only;color trace structure");
 			break;
 		default:
 			return super.onOptionsItemSelected(item);

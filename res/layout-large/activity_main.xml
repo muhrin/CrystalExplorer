@@ -9,7 +9,7 @@
 
     <fragment
         android:id="@+id/atoms_fragment"
-        android:layout_width="0px"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
         class="uk.ac.ucl.phys.crystalexplorer.AtomsSelectionFragment"
@@ -17,7 +17,7 @@
 
     <fragment
         android:id="@+id/jmol_fragment"
-        android:layout_width="0px"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="2"
         class="uk.ac.ucl.phys.crystalexplorer.JmolFragment" />
