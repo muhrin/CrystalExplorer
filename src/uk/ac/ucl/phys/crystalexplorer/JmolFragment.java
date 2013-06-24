@@ -92,7 +92,7 @@ public class JmolFragment extends Fragment implements JmolCallbackListener {
 				loadStructure(mCurrentStructure, true);
 			}
 		} else if(args != null) {
-			loadStructure(args.getString(AtomInfoKeys.STRUCTURE_PATH), args.getBundle(AtomInfoKeys.ATOMS_INFO));
+			loadStructure(args.getString(AtomInfoKeys.STRUCTURE_PATH), args.getBundle(AtomInfoKeys.STRUCTURE_INFO));
 		}
 	}
 	
@@ -137,13 +137,13 @@ public class JmolFragment extends Fragment implements JmolCallbackListener {
 
 	private void processAtomInfo(final Bundle atomInfo) {
 		// Go through atom species setting radii and colours
-		final int numAtoms = atomInfo.getInt(AtomInfoKeys.ATOM_INFO_NUM_ATOMS);
+		final int numAtoms = atomInfo.getInt(AtomInfoKeys.NUM_ATOMS);
 		final String[] atomSpecies = atomInfo
-				.getStringArray(AtomInfoKeys.ATOM_INFO_ATOM_SPECIES);
+				.getStringArray(AtomInfoKeys.ATOM_SPECIES);
 		final int[] atomColours = atomInfo
-				.getIntArray(AtomInfoKeys.ATOM_INFO_ATOM_COLOURS);
+				.getIntArray(AtomInfoKeys.ATOM_COLOURS);
 		final float[] atomSizes = atomInfo
-				.getFloatArray(AtomInfoKeys.ATOM_INFO_ATOM_SIZES);
+				.getFloatArray(AtomInfoKeys.ATOM_SIZES);
 		for (int i = 0; i < numAtoms; ++i) {
 			styleSettings += "{_" + atomSpecies[i] + "}.vanderwaals="
 					+ Float.toString(atomSizes[i]) + "; ";

@@ -26,6 +26,30 @@
 		        android:layout_width="match_parent"
 		        android:layout_height="wrap_content"
 		        android:orientation="vertical" />
+		    <LinearLayout
+		        android:layout_width="match_parent"
+		        android:layout_height="match_parent"
+		        android:orientation="horizontal"
+		        android:gravity="center_horizontal"
+		        android:paddingTop="6dp" >
+		        <Button 
+		            android:id="@+id/button_add_atom"
+		            android:layout_width="wrap_content"
+		            android:layout_height="wrap_content"
+		            android:text="@string/add_atom"
+   		            android:textSize="13sp"
+		            android:textStyle="bold"
+		            android:textAllCaps="true" />
+		        <Button 
+		            android:id="@+id/button_remove_atom"
+		            android:layout_width="wrap_content"
+		            android:layout_height="wrap_content"
+		            android:text="@string/remove_atom"
+		            android:textSize="13sp"
+		            android:textStyle="bold"
+		            android:textAllCaps="true" />
+		    </LinearLayout>
+		    
 		</LinearLayout>
 	</ScrollView>
 	<LinearLayout
@@ -35,17 +59,19 @@
 	    android:orientation="horizontal"
 	    android:layout_alignParentBottom="true">
 		<Button
-		    android:layout_width="wrap_content"
+		    android:layout_width="match_parent"
 		    android:layout_height="wrap_content"
 		    android:id="@+id/button_predict"
-		    android:text="@string/button_predict" />
+		    android:text="@string/button_predict"
+		    android:textAllCaps="false" />
 	
+		<!-- 
 		<CheckBox
 		    android:id="@+id/is_cluster"
 		    android:layout_width="wrap_content"
 		    android:layout_height="wrap_content"
 		    android:text="@string/is_cluster" />
-
+ 		-->
 	</LinearLayout>
 
 </RelativeLayout>

@@ -1,6 +1,5 @@
 package uk.ac.ucl.phys.crystalexplorer;
 
-import jp.sfjp.webglmol.NDKmol.HetAtomMode;
 import uk.ac.ucl.phys.crystalexplorer.R;
 
 import android.app.AlertDialog;
@@ -11,7 +10,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class MainActivity extends FragmentActivity implements
+public class MainActivityJmol extends FragmentActivity implements
 		AtomsSelectionFragment.AtomSelectionListener {
 
 	public final static String[] ELEMENTS = { "H", "He", "Li", "Be", "B", "C",
@@ -45,15 +44,9 @@ public class MainActivity extends FragmentActivity implements
 			0xB31FD4, 0xB31FBA, 0xB30DA6, 0xBD0D87, 0xC70066, 0xCC0059,
 			0xD1004F, 0xD90045, 0xE00038, 0xE6002E, 0xEB0026 };
 
-	private boolean mPaused = false;
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		// Set this action otherwise NDKMol will load it's default molecule
-		getIntent().setAction(NDKMolFragment.ACTION_WAIT);
-
 		setContentView(R.layout.activity_main);
 
 		// Check whether the activity is using the layout version with
@@ -79,9 +72,6 @@ public class MainActivity extends FragmentActivity implements
 			// Add the fragment to the 'fragment_container' FrameLayout
 			getSupportFragmentManager().beginTransaction()
 					.add(R.id.fragment_container, atomsSelection).commit();
-		} else {
-			initNDKMolFragment((NDKMolFragment) getSupportFragmentManager()
-					.findFragmentById(R.id.ndkmol_fragment));
 		}
 	}
 
@@ -94,29 +84,21 @@ public class MainActivity extends FragmentActivity implements
 
 	@Override
 	public void onStructurePredicted(String structurePath, Bundle atomInfoBundle) {
-		if (mPaused)
-			return;
+		JmolFragment jmol = (JmolFragment) getSupportFragmentManager()
+				.findFragmentById(R.id.jmol_fragment);
+		if (jmol != null) {
+			// We're in a dual-pane layout
 
-		NDKMolFragment ndkMol = (NDKMolFragment) getSupportFragmentManager()
-				.findFragmentById(R.id.ndkmol_fragment);
-		boolean dualPaneLayout = true;
-
-		if (ndkMol == null) {
-			ndkMol = new NDKMolFragment();
-			dualPaneLayout = false;
-		}
-		initNDKMolFragment(ndkMol);
-
-		if (dualPaneLayout) {
-
-			ndkMol.openFile(structurePath, atomInfoBundle);
+			jmol.loadStructure(structurePath, atomInfoBundle);
 		} else {
 			// One-pane layout so swap fragments
 
+			// Create fragment and give it an argument for the structure
+			jmol = new JmolFragment();
 			Bundle args = new Bundle();
 			args.putString(AtomInfoKeys.STRUCTURE_PATH, structurePath);
 			args.putBundle(AtomInfoKeys.STRUCTURE_INFO, atomInfoBundle);
-			ndkMol.setArguments(args);
+			jmol.setArguments(args);
 
 			FragmentTransaction transaction = getSupportFragmentManager()
 					.beginTransaction();
@@ -125,24 +107,12 @@ public class MainActivity extends FragmentActivity implements
 			// fragment,
 			// and add the transaction to the back stack so the user can
 			// navigate back
-			transaction.replace(R.id.fragment_container, ndkMol);
+			transaction.replace(R.id.fragment_container, jmol);
 			transaction.addToBackStack(null);
 
 			// Commit the transaction
 			transaction.commit();
 		}
-	}
-
-	@Override
-	public void onPause() {
-		super.onPause();
-		mPaused = true;
-	}
-
-	@Override
-	public void onResume() {
-		super.onResume();
-		mPaused = false;
 	}
 
 	@Override
@@ -155,13 +125,6 @@ public class MainActivity extends FragmentActivity implements
 		default:
 			return super.onOptionsItemSelected(item);
 		}
-	}
-
-	private void initNDKMolFragment(NDKMolFragment ndkMol) {
-		//ndkMol.setMenuVisibility(false);
-		ndkMol.setShowUnitcell(true);
-		ndkMol.setHetAtomMode(HetAtomMode.SPHERE);
-		ndkMol.setLineWidth(2f);
 	}
 
 	private void showAbout() {

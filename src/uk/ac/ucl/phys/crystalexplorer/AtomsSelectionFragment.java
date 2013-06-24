@@ -16,16 +16,15 @@ import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 public class AtomsSelectionFragment extends Fragment implements OnClickListener, StructurePredictionTask.StructurePredictionListener, OnCancelListener {
 
+	private static final float RADIUS_SCALE_FACTOR = 1f/3f;
 	private static final int CHOOSER_ID_OFFSET = 10;
 	private static final String NUM_ATOMS = "uk.ac.ucl.phys.crystalexplorer.NUM_ATOMS";
 
@@ -110,7 +109,10 @@ public class AtomsSelectionFragment extends Fragment implements OnClickListener,
 
 		content = (ViewGroup) view.findViewById(R.id.atoms_list);
 
+		// Set up UI listener
 		view.findViewById(R.id.button_predict).setOnClickListener(this);
+		view.findViewById(R.id.button_add_atom).setOnClickListener(this);
+		view.findViewById(R.id.button_remove_atom).setOnClickListener(this);
 
 		return view;
 	}
@@ -158,19 +160,6 @@ public class AtomsSelectionFragment extends Fragment implements OnClickListener,
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.menu_add_atom:
-			addAtom();
-			return true;
-		case R.id.menu_remove_atom:
-			removeAtom();
-			return true;
-		}
-		return false;
-	}
-
-	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 
@@ -200,7 +189,15 @@ public class AtomsSelectionFragment extends Fragment implements OnClickListener,
 		case R.id.button_predict:
 			predictStructure();
 			break;
+		case R.id.button_add_atom:
+			addAtom();
+			break;
+		case R.id.button_remove_atom:
+			removeAtom();
+			break;
 		}
+		
+			
 	}
 	
 	private AtomChooser createAtom() {
@@ -249,8 +246,8 @@ public class AtomsSelectionFragment extends Fragment implements OnClickListener,
 			structure.atomSizes[i] = atomChoosers.get(i).getSize();
 			structure.atomStrengths[i] = atomChoosers.get(i).getStrength();
 		}
-		final CheckBox isCluster = (CheckBox)getActivity().findViewById(R.id.is_cluster);
-		structure.isCluster = isCluster.isChecked();
+		//final CheckBox isCluster = (CheckBox)getActivity().findViewById(R.id.is_cluster);
+		//structure.isCluster = isCluster.isChecked();
 
 		mProgressDialog.show();
 		
@@ -262,18 +259,18 @@ public class AtomsSelectionFragment extends Fragment implements OnClickListener,
 		Bundle atomInfo = new Bundle();
 
 		final int numAtoms = atomChoosers.size();
-		atomInfo.putInt(AtomInfoKeys.ATOM_INFO_NUM_ATOMS, numAtoms);
+		atomInfo.putInt(AtomInfoKeys.NUM_ATOMS, numAtoms);
 		float[] atomSizes = new float[numAtoms];
 		int[] atomColours = new int[numAtoms];
 		String[] atomSpecies = new String[numAtoms];
 		for (int i = 0; i < numAtoms; ++i) {
-			atomSizes[i] = (float) atomChoosers.get(i).getSize();
+			atomSizes[i] = RADIUS_SCALE_FACTOR * atomChoosers.get(i).getSize();
 			atomColours[i] = atomChoosers.get(i).getColour();
 			atomSpecies[i] = ELEMENTS[i];
 		}
-		atomInfo.putFloatArray(AtomInfoKeys.ATOM_INFO_ATOM_SIZES, atomSizes);
-		atomInfo.putIntArray(AtomInfoKeys.ATOM_INFO_ATOM_COLOURS, atomColours);
-		atomInfo.putStringArray(AtomInfoKeys.ATOM_INFO_ATOM_SPECIES,
+		atomInfo.putFloatArray(AtomInfoKeys.ATOM_SIZES, atomSizes);
+		atomInfo.putIntArray(AtomInfoKeys.ATOM_COLOURS, atomColours);
+		atomInfo.putStringArray(AtomInfoKeys.ATOM_SPECIES,
 				atomSpecies);
 
 		return atomInfo;
@@ -292,6 +289,7 @@ public class AtomsSelectionFragment extends Fragment implements OnClickListener,
 
 	@Override
 	public void onStructurePredictionFailed(OutcomeCode err, String msg) {
+		mStructurePredictionTask = null;
 		resetProgressDialog();
 		
 		// 1. Instantiate an AlertDialog.Builder with its constructor
@@ -308,6 +306,7 @@ public class AtomsSelectionFragment extends Fragment implements OnClickListener,
 
 	@Override
 	public void onStructurePredictionProgress(int percentage, boolean takingLong) {
+		mStructurePredictionTask = null;
 		if(mProgressDialog != null && mProgressDialog.isShowing()) {
 			if(!takingLong)
 				mProgressDialog.setProgress(percentage);
@@ -323,6 +322,7 @@ public class AtomsSelectionFragment extends Fragment implements OnClickListener,
 	public void onCancel(DialogInterface dialog) {
 		if(mStructurePredictionTask != null) {
 			mStructurePredictionTask.cancel(true);
+			mStructurePredictionTask = null;
 		}
 		resetProgressDialog();
 	}
@@ -338,7 +338,8 @@ public class AtomsSelectionFragment extends Fragment implements OnClickListener,
 		}
 		
 		mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-		mProgressDialog.setMessage(getString(R.string.predicting_structure));
+		if(getActivity() != null)
+			mProgressDialog.setMessage(getString(R.string.predicting_structure));
 		mProgressDialog.setProgress(0);
 		mProgressDialog.setMax(100);
 	}

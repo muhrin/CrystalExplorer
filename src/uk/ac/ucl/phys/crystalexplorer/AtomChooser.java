@@ -5,23 +5,18 @@ import java.util.Random;
 import android.content.Context;
 import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.Spinner;
-import android.widget.TableLayout;
-import android.widget.TableRow;
-import android.widget.TextView;
 
-public class AtomChooser extends RelativeLayout implements SeekBar.OnSeekBarChangeListener {
+public class AtomChooser extends LinearLayout implements SeekBar.OnSeekBarChangeListener {
 	
 	private static int SEEK_BAR_MAX = 99;
 	private static float MAX_ATOM_DRAW_STROKE = 10f;
@@ -250,13 +245,6 @@ public class AtomChooser extends RelativeLayout implements SeekBar.OnSeekBarChan
 		final float height = (float)getHeight();
 		final float width = (float)getWidth();
 		
-
-		if (Build.VERSION.SDK_INT >= 11) {
-			if (canvas.isHardwareAccelerated()) {
-				setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-		    }
-		}
-		
 		canvas.drawCircle(myAtomDrawX, myAtomDrawY, myAtomDrawStrokeRadius, myAtomStrokePaint);
 		canvas.drawCircle(myAtomDrawX, myAtomDrawY, myAtomDrawRadius, myPaint);
 		canvas.drawLine(0f, height - 1f, width, height - 1f, mFooterLinePaint);
@@ -299,67 +287,31 @@ public class AtomChooser extends RelativeLayout implements SeekBar.OnSeekBarChan
 		mFooterLinePaint.setStyle(Paint.Style.STROKE);
 		mFooterLinePaint.setARGB(255, 170, 170, 170);
 		
-		RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-		setPadding(16, 16, 16, 16);
-		setLayoutParams(lp);
+		// Need to draw on this layer in software because otherwise blur doesn't work
+		if (Build.VERSION.SDK_INT >= 11) {
+			//if (isHardwareAccelerated()) {
+				setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+		    //}
+		}
 		
-		atomSizeSlider = new SeekBar(context);
+		RelativeLayout layout = (RelativeLayout)inflate(context, R.layout.atom_chooser, null);
+		addView(layout);
+		
+		atomSizeSlider = (SeekBar)layout.findViewById(R.id.size_selector);
 		atomSizeSlider.setMax(SEEK_BAR_MAX);
-		atomStrengthSlider = new SeekBar(context);
-		atomStrengthSlider.setMax(SEEK_BAR_MAX);
-		numAtomsPicker = new Spinner(context);
+		atomSizeSlider.setOnSeekBarChangeListener(this);
 		
-		RelativeLayout.LayoutParams numLayout = new RelativeLayout.LayoutParams(
-				RelativeLayout.LayoutParams.WRAP_CONTENT,
-				RelativeLayout.LayoutParams.WRAP_CONTENT);
-		numLayout.addRule(CENTER_VERTICAL);
-		numAtomsPicker.setLayoutParams(numLayout);
-		numAtomsPicker.setId(1);
+		atomStrengthSlider = (SeekBar)layout.findViewById(R.id.strength_selector);
+		atomStrengthSlider.setMax(SEEK_BAR_MAX);
+		atomStrengthSlider.setOnSeekBarChangeListener(this);
+		
+		numAtomsPicker = (Spinner)layout.findViewById(R.id.num_atoms_selector);
 		Integer[] possibleNumAtoms = new Integer[myMaxAtoms];
 		for(int i = 1; i <= myMaxAtoms; ++i)
 			possibleNumAtoms[i - 1] = i;
 		ArrayAdapter<Integer> numAtomsAdapter =
 				new ArrayAdapter<Integer>(context, android.R.layout.simple_spinner_dropdown_item, possibleNumAtoms);
 		numAtomsPicker.setAdapter(numAtomsAdapter);
-		addView(numAtomsPicker);
-		
-		TableLayout atomOptions = new TableLayout(context);
-		TableRow sizeRow = new TableRow(context);
-		sizeRow.setGravity(Gravity.CENTER_VERTICAL);
-		TableRow strengthRow = new TableRow(context);
-		strengthRow.setGravity(Gravity.CENTER_VERTICAL);
-		
-		TextView tvAtomSize = new TextView(context);
-		tvAtomSize.setText("Size");
-		tvAtomSize.setBackgroundColor(Color.TRANSPARENT);
-		tvAtomSize.setId(10);
-		sizeRow.addView(tvAtomSize);
-		
-		TextView tvAtomStrength = new TextView(context);
-		tvAtomStrength.setText("Strength");
-		tvAtomStrength.setBackgroundColor(Color.TRANSPARENT);
-		tvAtomStrength.setId(11);
-		strengthRow.addView(tvAtomStrength);
-		
-		atomSizeSlider.setId(2);
-		atomSizeSlider.setOnSeekBarChangeListener(this);
-		sizeRow.addView(atomSizeSlider);
-
-		atomStrengthSlider.setId(3);
-		atomStrengthSlider.setOnSeekBarChangeListener(this);
-		strengthRow.addView(atomStrengthSlider);
-
-		atomOptions.addView(sizeRow);
-		atomOptions.addView(strengthRow);
-		atomOptions.setColumnStretchable(1, true);
-		atomOptions.setGravity(Gravity.CENTER_VERTICAL);
-		
-		RelativeLayout.LayoutParams atomOptionsLayoutParams = new RelativeLayout.LayoutParams(
-				RelativeLayout.LayoutParams.MATCH_PARENT,
-				RelativeLayout.LayoutParams.WRAP_CONTENT);
-		atomOptionsLayoutParams.addRule(RelativeLayout.RIGHT_OF, numAtomsPicker.getId());
-		atomOptions.setLayoutParams(atomOptionsLayoutParams);
-		addView(atomOptions);
 		
 		setSize(mySizes.randomInRange());
 		setStrength(myStrengths.randomInRange());

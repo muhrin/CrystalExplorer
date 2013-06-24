@@ -3,17 +3,32 @@
 
     <string name="app_name">CrystalExplorer</string>
     <string name="action_settings">Settings</string>
-    <string name="menu_add_atom">Add atom</string>
-    <string name="menu_remove_atom">Remove atom</string>
+    <string name="add_atom">Add species</string>
+    <string name="remove_atom">Remove species</string>
+    <string name="num_atoms"># atoms</string>
+    <string name="atom_size">Size</string>
+    <string name="atom_strength">Strength</string>
     <string name="menu_about">About</string>
     <string name="button_predict">Predict</string>
     <string name="predicting_structure">Predicting structure&#8230;</string>
     <string name="predicting_structure_taking_long">Predicting structure&#8230;bear with me, I\'ll get there.</string>
     <string name="prediction_failed">Sorry, I couldn\'t predict your structure - try something a little simpler.</string>
-    <string name="instructions">Choose a size and strength for each atom and how many you want on the left.  To add more atoms push the plus in the top right.  To predict the structure hit \'Predict\'.</string>
-    <string name="about_text">Copyright \u00A9 Martin Uhrin, 2013\n\nBig thanks to the following people for input and beta testing:\nRobert Antonio, Seto Balian, Chris Pickard, Hannah Smith\n\nCrystalExplorer uses the following software and libraries:\n-Jmol\n-Boost\n-Armadillo C++\n-Yaml-cpp\n</string>
+    <string name="instructions">Choose a size and strength for each atom species and how many you want.  To predict the crystal structure hit \'Predict\'.</string>
     <string name="button_plus">+</string>
     <string name="button_minus">-</string>
+    <string name="ball_and_stick">Ball and Stick</string>
+    <string name="sticks">Sticks</string>
+    <string name="wireframe">Wireframe</string>
     <string name="is_cluster">Cluster</string>
+    <string name="about_text">
+        Copyright \u00A9 Martin Uhrin, 2013\n\n
+        Big thanks to the following people for input and beta testing:\n
+        Robert Antonio, Seto Balian, Chris Pickard, Cassie Philp, Hannah Smith, Cheah Wei Li\n\n
+        CrystalExplorer uses the following software and libraries:\n
+        -NDKMol\n
+        -Boost\n
+        -Armadillo C++\n
+        -Yaml-cpp\n
+     </string>
 
 </resources>
