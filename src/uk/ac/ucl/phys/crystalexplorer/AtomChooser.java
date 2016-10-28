@@ -286,12 +286,11 @@ public class AtomChooser extends LinearLayout implements SeekBar.OnSeekBarChange
 		mFooterLinePaint = new Paint();
 		mFooterLinePaint.setStyle(Paint.Style.STROKE);
 		mFooterLinePaint.setARGB(255, 170, 170, 170);
+		mFooterLinePaint.setStrokeWidth(0);
 		
 		// Need to draw on this layer in software because otherwise blur doesn't work
 		if (Build.VERSION.SDK_INT >= 11) {
-			//if (isHardwareAccelerated()) {
-				setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-		    //}
+			setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 		}
 		
 		RelativeLayout layout = (RelativeLayout)inflate(context, R.layout.atom_chooser, null);
@@ -312,6 +311,8 @@ public class AtomChooser extends LinearLayout implements SeekBar.OnSeekBarChange
 		ArrayAdapter<Integer> numAtomsAdapter =
 				new ArrayAdapter<Integer>(context, android.R.layout.simple_spinner_dropdown_item, possibleNumAtoms);
 		numAtomsPicker.setAdapter(numAtomsAdapter);
+		Random r = new Random();
+		numAtomsPicker.setSelection(r.nextInt(numAtomsPicker.getCount()));
 		
 		setSize(mySizes.randomInRange());
 		setStrength(myStrengths.randomInRange());

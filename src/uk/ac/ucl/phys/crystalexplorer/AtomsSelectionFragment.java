@@ -1,6 +1,10 @@
 package uk.ac.ucl.phys.crystalexplorer;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import uk.ac.ucl.phys.crystalexplorer.StructurePredictionTask.OutcomeCode;
@@ -261,13 +265,16 @@ public class AtomsSelectionFragment extends Fragment implements OnClickListener,
 		final int numAtoms = atomChoosers.size();
 		atomInfo.putInt(AtomInfoKeys.NUM_ATOMS, numAtoms);
 		float[] atomSizes = new float[numAtoms];
+		float[] atomStrengths = new float[numAtoms];
 		int[] atomColours = new int[numAtoms];
 		String[] atomSpecies = new String[numAtoms];
 		for (int i = 0; i < numAtoms; ++i) {
+			atomSpecies[i] = ELEMENTS[i];
+			atomStrengths[i] = atomChoosers.get(i).getStrength();
 			atomSizes[i] = RADIUS_SCALE_FACTOR * atomChoosers.get(i).getSize();
 			atomColours[i] = atomChoosers.get(i).getColour();
-			atomSpecies[i] = ELEMENTS[i];
 		}
+		atomInfo.putFloatArray(AtomInfoKeys.ATOM_STRENGTHS, atomStrengths);
 		atomInfo.putFloatArray(AtomInfoKeys.ATOM_SIZES, atomSizes);
 		atomInfo.putIntArray(AtomInfoKeys.ATOM_COLOURS, atomColours);
 		atomInfo.putStringArray(AtomInfoKeys.ATOM_SPECIES,
@@ -284,7 +291,36 @@ public class AtomsSelectionFragment extends Fragment implements OnClickListener,
 	public void onStructurePredicted(String path) {
 		resetProgressDialog();
 		
-		myCallback.onStructurePredicted(path, createAtomInfoBundle());
+		final Bundle atomsInfo = createAtomInfoBundle();
+		saveAtomsInfo(path, atomsInfo);
+		myCallback.onStructurePredicted(path, atomsInfo);
+	}
+	
+	private void saveAtomsInfo(final String path, final Bundle atomsInfo) {
+		File file = new File(path);
+		BufferedWriter writer = null;
+		try {
+		    writer = new BufferedWriter(new FileWriter(file, true));
+
+			final String[] atomSpecies = atomsInfo.getStringArray(AtomInfoKeys.ATOM_SPECIES);
+			final float[] atomSizes = atomsInfo.getFloatArray(AtomInfoKeys.ATOM_SIZES);
+			final float[] atomStrengths = atomsInfo.getFloatArray(AtomInfoKeys.ATOM_STRENGTHS);
+			writer.write("\n");
+			for(int i = 0; i < atomSpecies.length; ++i) {
+				writer.write("# " + atomSpecies[i] + " " + atomSizes[i] + " " + atomStrengths[i] + "\n");
+			}
+		} catch (FileNotFoundException e) {
+		    e.printStackTrace();
+		} catch (IOException e) {
+		    e.printStackTrace();
+		} finally {
+		    try {
+		        if (writer != null) {
+		            writer.close();
+		        }
+		    } catch (IOException e) {
+		    }
+		}
 	}
 
 	@Override
@@ -306,7 +342,6 @@ public class AtomsSelectionFragment extends Fragment implements OnClickListener,
 
 	@Override
 	public void onStructurePredictionProgress(int percentage, boolean takingLong) {
-		mStructurePredictionTask = null;
 		if(mProgressDialog != null && mProgressDialog.isShowing()) {
 			if(!takingLong)
 				mProgressDialog.setProgress(percentage);

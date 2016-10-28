@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.Runtime;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.locks.ReentrantLock;
 
 import android.os.AsyncTask;
 import android.os.CountDownTimer;
@@ -89,11 +90,13 @@ public class StructurePredictionTask extends AsyncTask<StructureProperties, Inte
 
 		private boolean mStop;
 		private boolean mStopAfterNext;
-		private String mLowestPath;
+		private File mLowestPath;
 		private boolean mBeenUpdated;;
 		private float mLowestEnergy;
 		private int mTimesFound;
 		private String mErrorMessage;
+		ExecutorService mPool;
+		ReentrantLock mPoolLock = new ReentrantLock();
 		
 		class Optimiser implements Runnable {
 			private final PredictionRun mRun;
@@ -125,7 +128,6 @@ public class StructurePredictionTask extends AsyncTask<StructureProperties, Inte
 			mLowestEnergy = 0f;
 			mTimesFound = 0;
 			mBeenUpdated = false;
-			mLowestPath = new String();
 			mErrorMessage = new String();
 		}
 
@@ -187,11 +189,12 @@ public class StructurePredictionTask extends AsyncTask<StructureProperties, Inte
 		}
 
 		public boolean hasStructure() {
-			return mLowestPath.length() != 0;
+			return mLowestPath != null && mLowestPath.exists();
 		}
 
 		public String getLowestPath() {
-			return mLowestPath;
+			if(mLowestPath == null) return "";
+			return mLowestPath.getPath();
 		}
 
 		public String getErrorMessage() {
@@ -208,7 +211,7 @@ public class StructurePredictionTask extends AsyncTask<StructureProperties, Inte
 
 		public void start() {
 			
-			final ExecutorService pool = new BlockingFixedThreadPool(Runtime.getRuntime().availableProcessors());
+			mPool = new BlockingFixedThreadPool(Runtime.getRuntime().availableProcessors());
 			
 			int i = 0;
 			mStop = false;
@@ -217,19 +220,30 @@ public class StructurePredictionTask extends AsyncTask<StructureProperties, Inte
 				// File to save the structure to
 				File structureFile = new File(mSaveDir, generateStructureName()
 						+ "-" + Integer.toString(i++) + ".res");
-				pool.execute(new Optimiser(this, structureFile, mStructure));
+				mPool.execute(new Optimiser(this, structureFile, mStructure));
 				
 				if(mStopAfterNext && hasStructure())
-					mStop = true;
+					break;
 
 				if (getTimesFound() >= mMaxTimesFound)
-					mStop = true;
+					break;
 			}
-			pool.shutdownNow();
+			
+			mPoolLock.lock();
+			mPool = null;
+			mPoolLock.unlock();
 		}
 
-		public void stop() {
+		public void stopNow() {
+			if(mStop)
+				return;
+			
+			mPoolLock.lock();
 			mStop = true;
+			if(mPool != null) {
+				mPool.shutdownNow();
+			}
+			mPoolLock.unlock();
 		}
 		
 		public void stopAfterNext() {
@@ -256,7 +270,10 @@ public class StructurePredictionTask extends AsyncTask<StructureProperties, Inte
 					mTimesFound = 0;
 			}
 
-			mLowestPath = structureFile.getPath();
+			if(hasStructure())
+				mLowestPath.delete();
+			
+			mLowestPath = structureFile;
 			mLowestEnergy = energy;
 		}
 
@@ -292,13 +309,13 @@ public class StructurePredictionTask extends AsyncTask<StructureProperties, Inte
 	
 	private void onGraceTimeout() {
 		if(mCurrentRun != null)
-			mCurrentRun.stop();
+			mCurrentRun.stopNow();
 	}
 
 	private void onPredictionTimeout() {
 		if(mCurrentRun != null) {
 			if(mCurrentRun.getTimesFound() >= mCurrentRun.getMaxTimesFound())
-				mCurrentRun.stop();
+				mCurrentRun.stopNow();
 			else {
 				// Give it a grace period to find some structures
 				mCurrentRun.stopAfterNext();
@@ -315,7 +332,7 @@ public class StructurePredictionTask extends AsyncTask<StructureProperties, Inte
 	
 	public void stopAndCancel() {
 		if(mCurrentRun != null) {
-			mCurrentRun.stop();
+			mCurrentRun.stopNow();
 		}
 		mCancelled = true;
 	}
@@ -347,6 +364,7 @@ public class StructurePredictionTask extends AsyncTask<StructureProperties, Inte
 		mTakingLong = false;
 		mCurrentRun = new PredictionRun(structureProperties, ENERGY_TOLERANCE, mFilesDir, maxTimesFound);
 		mCurrentRun.start();
+		mPredictionTimer.kill();
 
 		if (mCurrentRun.hasStructure()) {
 			outcome.code = OutcomeCode.SUCCESS;
@@ -355,9 +373,8 @@ public class StructurePredictionTask extends AsyncTask<StructureProperties, Inte
 			outcome.code = OutcomeCode.ERROR_FAILED_TO_PREDICT;
 			outcome.message = mCurrentRun.getErrorMessage();
 		}
-
-		mPredictionTimer.kill();
 		mCurrentRun = null;
+
 		return outcome;
 	}
 	
